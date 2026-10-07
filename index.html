@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="id" class="dark h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AN's Project Countdown — 18 Maret 2028</title>
+
+    <!-- Google Fonts: Roboto Condensed for Split-Flap Numerals & Outfit for Interface UI -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Roboto+Condensed:wght@600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        condensed: ['"Roboto Condensed"', 'sans-serif'],
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        obsidian: '#0a0a0c',
+                        goldAccent: '#c6a357',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0a0a0c;
+            color: #e2e8f0;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum";
+        }
+
+        /* 3D Perspective Container for Split-Flap Cards */
+        .flip-card-container {
+            perspective: 600px;
+            -webkit-perspective: 600px;
+            width: 100%;
+        }
+
+        .flip-card {
+            position: relative;
+            background: #0d0e11;
+            border-radius: 16px;
+            box-shadow: 
+                0 16px 32px -8px rgba(0, 0, 0, 0.85),
+                0 4px 12px rgba(0, 0, 0, 0.5),
+                inset 0 1px 1px rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        @media (min-width: 640px) {
+            .flip-card {
+                border-radius: 20px;
+            }
+        }
+
+        /* Split Halves Positioning */
+        .card-half {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 50%;
+            overflow: hidden;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .card-half.top {
+            top: 0;
+            background: linear-gradient(180deg, #1c1d22 0%, #15161a 100%);
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            transform-origin: 50% 100%;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.9);
+        }
+
+        .card-half.bottom {
+            bottom: 0;
+            background: linear-gradient(180deg, #131417 0%, #0c0d0f 100%);
+            border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 16px;
+            transform-origin: 50% 0%;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        @media (min-width: 640px) {
+            .card-half.top {
+                border-top-left-radius: 20px;
+                border-top-right-radius: 20px;
+            }
+            .card-half.bottom {
+                border-bottom-left-radius: 20px;
+                border-bottom-right-radius: 20px;
+            }
+        }
+
+        /* Numerals Alignment inside Half Cards */
+        .flip-number {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 200%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Roboto Condensed', sans-serif;
+            font-weight: 700;
+            color: #ededed;
+            line-height: 1;
+            letter-spacing: -0.03em;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+            user-select: none;
+            pointer-events: none;
+        }
+
+        .card-half.top .flip-number {
+            top: 0;
+        }
+
+        .card-half.bottom .flip-number {
+            bottom: 0;
+        }
+
+        /* CRITICAL: HIDE FLAP LAYERS WHEN NOT FLIPPING TO PREVENT GHOSTING & OVERLAP */
+        .flip-card:not(.flipping) .flap-top,
+        .flip-card:not(.flipping) .flap-bottom {
+            display: none !important;
+        }
+
+        .flip-card.flipping .flap-top,
+        .flip-card.flipping .flap-bottom {
+            display: block !important;
+        }
+
+        /* Layering Order During Animations */
+        .static-top {
+            z-index: 1;
+        }
+        .static-bottom {
+            z-index: 1;
+        }
+        .flap-top {
+            z-index: 4;
+        }
+        .flap-bottom {
+            z-index: 3;
+        }
+
+        /* REALISTIC 3D FLIP ANIMATION KEYFRAMES */
+        .flipping .flap-top {
+            animation: flipTop 0.38s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+        }
+
+        .flipping .flap-bottom {
+            animation: flipBottom 0.38s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+        }
+
+        @keyframes flipTop {
+            0% {
+                transform: rotateX(0deg);
+                filter: brightness(1);
+            }
+            100% {
+                transform: rotateX(-90deg);
+                filter: brightness(0.2);
+            }
+        }
+
+        @keyframes flipBottom {
+            0% {
+                transform: rotateX(90deg);
+                filter: brightness(0.2);
+            }
+            100% {
+                transform: rotateX(0deg);
+                filter: brightness(1);
+            }
+        }
+
+        /* Center Seam & Notch Cuts */
+        .flip-card-seam {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(0, 0, 0, 0.95);
+            box-shadow: 0 1px 1px rgba(255, 255, 255, 0.06);
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .flip-card-notch-left,
+        .flip-card-notch-right {
+            position: absolute;
+            top: 50%;
+            width: 4px;
+            height: 7px;
+            background: #0a0a0c;
+            z-index: 12;
+            transform: translateY(-50%);
+        }
+        .flip-card-notch-left {
+            left: 0;
+            border-radius: 0 3px 3px 0;
+        }
+        .flip-card-notch-right {
+            right: 0;
+            border-radius: 3px 0 0 3px;
+        }
+
+        /* Modal Overlay & Transitions */
+        .modal-overlay {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            transform: translateY(12px) scale(0.98);
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-overlay.open .modal-card {
+            transform: translateY(0) scale(1);
+        }
+
+        /* Custom Modal Scrollbar */
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="h-full min-h-screen flex flex-col justify-between items-center relative bg-obsidian text-neutral-100 selection:bg-amber-500/20">
+
+    <header class="w-full max-w-5xl px-6 py-8 z-10 flex justify-between items-center">
+        <div class="flex items-center gap-2.5">
+            <span class="h-1.5 w-1.5 rounded-full bg-goldAccent"></span>
+            <span class="font-sans font-semibold tracking-[0.2em] text-[10px] sm:text-xs uppercase text-neutral-400">
+                AN'S PROJECT COUNTDOWN
+            </span>
+        </div>
+    </header>
+
+    <main class="w-full max-w-5xl px-3 sm:px-4 z-10 my-auto flex flex-col items-center justify-center text-center py-6 sm:py-10">
+        
+        <!-- 1. SPLIT-FLAP FLIP CLOCK TIMER DISPLAY -->
+        <div class="w-full mb-8 sm:mb-10">
+            <div class="flex items-center justify-center gap-2 sm:gap-4 md:gap-5">
+                
+                <!-- CARD: DAYS (Scaled font size for 3 digits) -->
+                <div class="flex flex-col items-center">
+                    <div class="flip-card-container">
+                        <div id="cardDays" class="flip-card w-[72px] h-[96px] sm:w-[126px] sm:h-[150px] md:w-[150px] md:h-[180px] lg:w-[170px] lg:h-[200px]">
+                            <div class="card-half top static-top"><span class="flip-number text-3xl sm:text-5xl md:text-6xl lg:text-7xl">000</span></div>
+                            <div class="card-half bottom static-bottom"><span class="flip-number text-3xl sm:text-5xl md:text-6xl lg:text-7xl">000</span></div>
+                            <div class="card-half top flap-top"><span class="flip-number text-3xl sm:text-5xl md:text-6xl lg:text-7xl">000</span></div>
+                            <div class="card-half bottom flap-bottom"><span class="flip-number text-3xl sm:text-5xl md:text-6xl lg:text-7xl">000</span></div>
+                            <div class="flip-card-seam"></div>
+                            <div class="flip-card-notch-left"></div>
+                            <div class="flip-card-notch-right"></div>
+                        </div>
+                    </div>
+                    <span class="font-sans text-[10px] sm:text-xs uppercase tracking-[0.2em] text-goldAccent font-medium mt-3">DAYS</span>
+                </div>
+
+                <!-- CARD: HOURS -->
+                <div class="flex flex-col items-center">
+                    <div class="flip-card-container">
+                        <div id="cardHours" class="flip-card w-[72px] h-[96px] sm:w-[126px] sm:h-[150px] md:w-[150px] md:h-[180px] lg:w-[170px] lg:h-[200px]">
+                            <div class="card-half top static-top"><span class="flip-number text-4xl sm:text-6xl md:text-7xl lg:text-8xl">00</span></div>
+                            <div class="card-half bottom static-bottom"><span class="flip-number text-4xl sm:text-6xl md:text-7xl lg:text-8xl">00</span></div>
+                            <div class="card-half top flap-top"><span class="flip-number text-4xl sm:text-6xl md:text-7xl lg:text-8xl">00</span></div>
+                            <div class="card-half bottom flap-bottom"><span class="flip-number text-4xl sm:text-6xl md:text-7xl lg:text-8xl">00</span></div>
+                            <div class="flip-card-seam"></div>
+                            <div class="flip-card-notch-left"></div>
+                            <div class="flip-card-notch-right"></div>
+                        </div>
+                    </div>
+                    <span class="font-sans text-[10px] sm:text-xs uppercase tracking-[0.2em] text-goldAccent font-medium mt-3">HOURS</span>
+                </div>
+
+                <!-- CARD: MINUTES -->
+                <div class="flex flex-col items-center">
+                    <div class="flip-card-container">
+                        <div id="cardMinutes" class="flip-card w-[72px] h-[96px] sm:w-[126px] sm:h-[150px] md:w-[150px] md:h-[180px] lg:w-[170px] lg:h-[200px]">
+                            <div class="card-half top static-top"><span class="flip-number text-4xl sm:text-6xl md:text-7xl lg:text-8xl">00</span></div>
+                            <div class="card-half bottom static-bottom"><span class="flip-number text-4xl sm:text-6xl md:text-7xl lg:text-8xl">00</span></div>
+                            <div class="card-half top flap-top"><span class="flip-number text-4xl sm:text-6xl md:text-7xl lg:text-8xl">00</span></div>
+                            <div class="card-half bottom flap-bottom"><span class="flip-number text-4xl sm:text-6xl md:text-7xl lg:text-8xl">00</span></div>
+                            <div class="flip-card-seam"></div>
+                            <div class="flip-card-notch-left"></div>
+                            <div class="flip-card-notch-right"></div>
+                        </div>
+                    </div>
+                    <span class="font-sans text-[10px] sm:text-xs uppercase tracking-[0.2em] text-goldAccent font-medium mt-3">MINUTES</span>
+                </div>
+
+                <!-- CARD: SECONDS -->
+                <div class="flex flex-col items-center">
+                    <div class="flip-card-container">
+                        <div id="cardSeconds" class="flip-card w-[72px] h-[96px] sm:w-[126px] sm:h-[150px] md:w-[150px] md:h-[180px] lg:w-[170px] lg:h-[200px]">
+                            <div class="card-half top static-top"><span class="flip-number text-4xl sm:text-6xl md:text-7xl lg:text-8xl">00</span></div>
+                            <div class="card-half bottom static-bottom"><span class="flip-number text-4xl sm:text-6xl md:text-7xl lg:text-8xl">00</span></div>
+                            <div class="card-half top flap-top"><span class="flip-number text-4xl sm:text-6xl md:text-7xl lg:text-8xl">00</span></div>
+                            <div class="card-half bottom flap-bottom"><span class="flip-number text-4xl sm:text-6xl md:text-7xl lg:text-8xl">00</span></div>
+                            <div class="flip-card-seam"></div>
+                            <div class="flip-card-notch-left"></div>
+                            <div class="flip-card-notch-right"></div>
+                        </div>
+                    </div>
+                    <span class="font-sans text-[10px] sm:text-xs uppercase tracking-[0.2em] text-goldAccent font-medium mt-3">SECONDS</span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 2. UNTIL TARGET DATE HEADER -->
+        <div class="mb-8 flex flex-col items-center">
+            <span class="font-sans text-[10px] sm:text-xs font-semibold tracking-[0.3em] text-neutral-400 uppercase block mb-1">
+                UNTIL
+            </span>
+            <h1 class="font-sans text-xl sm:text-3xl md:text-4xl font-semibold text-neutral-200 tracking-tight">
+                18 Maret 2028
+            </h1>
+        </div>
+
+        <!-- 3. ACTION BUTTONS (SIDE BY SIDE) -->
+        <div class="flex flex-row items-center justify-center gap-2.5 w-full sm:w-auto">
+            
+            <!-- Button: Cari tau apa ini? -->
+            <button id="openInfoBtn" class="group px-3.5 py-2 rounded-lg text-xs font-sans font-medium tracking-wide text-neutral-300 border border-neutral-800 bg-neutral-900/90 hover:bg-neutral-800 hover:border-neutral-700 transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap active:scale-95">
+                <svg class="w-3.5 h-3.5 shrink-0 text-neutral-400 group-hover:text-goldAccent transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>Cari tau apa ini?</span>
+            </button>
+
+            <!-- Button: Explore -->
+            <button id="openExploreBtn" class="group px-3.5 py-2 rounded-lg text-xs font-sans font-medium tracking-wide text-neutral-300 border border-neutral-800 bg-neutral-900/90 hover:bg-neutral-800 hover:border-neutral-700 transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap active:scale-95">
+                <svg class="w-3.5 h-3.5 shrink-0 text-neutral-400 group-hover:text-goldAccent transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span>Explore</span>
+            </button>
+
+        </div>
+
+    </main>
+
+    <footer class="w-full max-w-5xl px-6 py-6 z-10 text-center font-sans text-[11px] tracking-wider text-neutral-500">
+        Copyright AN's 2026
+    </footer>
+
+    <!-- INFO MODAL -->
+    <div id="infoModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="modal-card bg-neutral-900 text-neutral-100 max-w-md w-full p-6 sm:p-7 rounded-2xl relative border border-neutral-800 text-left shadow-2xl space-y-4">
+            
+            <div class="flex justify-between items-center border-b border-neutral-800 pb-3">
+                <h3 class="font-sans text-xs font-semibold tracking-wider uppercase text-goldAccent">
+                    Informasi Countdown
+                </h3>
+                <button id="closeInfoBtn" class="text-neutral-400 hover:text-white p-1 rounded-lg hover:bg-neutral-800 transition-colors" aria-label="Close">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="space-y-3 text-xs sm:text-sm text-neutral-300 leading-relaxed font-normal">
+                <p>
+                     Nothing
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXPLORE MODAL -->
+    <div id="exploreModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        
+        <div class="modal-card bg-neutral-900 text-neutral-100 max-w-sm sm:max-w-md w-full rounded-2xl relative border border-neutral-800 shadow-2xl overflow-hidden flex flex-col max-h-[88vh]">
+            
+            <div class="px-5 py-3.5 border-b border-neutral-800 flex items-center justify-between bg-neutral-900/90 backdrop-blur-sm z-10">
+                <span class="font-sans text-xs uppercase tracking-widest font-semibold text-neutral-400">
+                    Target Calendar & Details
+                </span>
+                <button id="closeExploreBtn" class="text-neutral-400 hover:text-white p-1 rounded-lg hover:bg-neutral-800 transition-colors" aria-label="Close">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-5 overflow-y-auto custom-scroll space-y-6 text-left text-xs">
+                
+                <!-- CALENDAR SECTION -->
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="font-sans text-[10px] tracking-wider uppercase text-neutral-400 font-semibold block">
+                            CALENDAR
+                        </span>
+                        <div class="flex items-center gap-2">
+                            <span id="calMonthDisplay" class="font-sans text-xs text-neutral-200 font-medium">
+                                Maret 2028
+                            </span>
+                            <div class="flex items-center gap-1">
+                                <button id="prevCalMonth" class="p-1 rounded bg-neutral-800 hover:bg-neutral-700 transition-colors text-neutral-300">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                                </button>
+                                <button id="nextCalMonth" class="p-1 rounded bg-neutral-800 hover:bg-neutral-700 transition-colors text-neutral-300">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-neutral-950/60 p-3 rounded-xl border border-neutral-800/80">
+                        <div class="grid grid-cols-7 text-center text-[10px] font-sans font-semibold tracking-wider text-neutral-400 mb-2">
+                            <span>MON</span>
+                            <span>TUE</span>
+                            <span>WED</span>
+                            <span>THU</span>
+                            <span>FRI</span>
+                            <span>SAT</span>
+                            <span>SUN</span>
+                        </div>
+
+                        <div id="calendarGrid" class="grid grid-cols-7 text-center text-xs gap-y-1 text-neutral-300">
+                            <!-- Rendered dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DETAILS SECTION -->
+                <div>
+                    <span class="font-sans text-[10px] tracking-wider uppercase text-neutral-400 font-semibold block mb-2">
+                        DETAILS
+                    </span>
+                    
+                    <div class="bg-neutral-950/60 rounded-xl p-3 border border-neutral-800/80 space-y-2.5 font-sans">
+                        <div class="flex justify-between items-center py-1 border-b border-neutral-800/50">
+                            <span class="text-neutral-400">Target date</span>
+                            <span class="font-medium text-neutral-200">18 March 2028</span>
+                        </div>
+                        <div class="flex justify-between items-center py-1 border-b border-neutral-800/50">
+                            <span class="text-neutral-400">Target time</span>
+                            <span class="font-medium text-neutral-200">07.30 WIB</span>
+                        </div>
+                        <div class="flex justify-between items-center py-1 border-b border-neutral-800/50">
+                            <span class="text-neutral-400">Day</span>
+                            <span class="font-medium text-neutral-200">Saturday</span>
+                        </div>
+                        <div class="flex justify-between items-center py-1">
+                            <span class="text-neutral-400">Location</span>
+                            <span class="font-medium text-neutral-200">Wonogiri, Jawa Tengah</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Target Date: March 18, 2028 00:00:00 WIB
+        const TARGET_TIME = new Date("March 18, 2028 00:00:00").getTime();
+
+        const units = {
+            days: { card: document.getElementById('cardDays'), current: null },
+            hours: { card: document.getElementById('cardHours'), current: null },
+            minutes: { card: document.getElementById('cardMinutes'), current: null },
+            seconds: { card: document.getElementById('cardSeconds'), current: null }
+        };
+
+        function padZero(num, length = 2) {
+            return String(num).padStart(length, '0');
+        }
+
+        // Deterministic Split-Flap Animation Controller
+        function flipCardUnit(unitKey, newValue) {
+            const unit = units[unitKey];
+            if (!unit) return;
+
+            const card = unit.card;
+
+            // First initialization without animation
+            if (unit.current === null) {
+                card.querySelector('.static-top .flip-number').innerText = newValue;
+                card.querySelector('.static-bottom .flip-number').innerText = newValue;
+                card.querySelector('.flap-top .flip-number').innerText = newValue;
+                card.querySelector('.flap-bottom .flip-number').innerText = newValue;
+                unit.current = newValue;
+                return;
+            }
+
+            if (unit.current === newValue) return;
+
+            const oldValue = unit.current;
+
+            const staticTop = card.querySelector('.static-top .flip-number');
+            const staticBottom = card.querySelector('.static-bottom .flip-number');
+            const flapTop = card.querySelector('.flap-top .flip-number');
+            const flapBottom = card.querySelector('.flap-bottom .flip-number');
+
+            // 1. Prepare card values prior to turning flaps
+            staticTop.innerText = newValue;     // Reveals new top value as flap-top folds down
+            staticBottom.innerText = oldValue;  // Retains old bottom value until flap-bottom unrolls
+            flapTop.innerText = oldValue;       // Old top folds down
+            flapBottom.innerText = newValue;    // New bottom unrolls
+
+            // 2. Trigger keyframe animation
+            card.classList.remove('flipping');
+            void card.offsetWidth; // Force CSS Reflow
+            card.classList.add('flipping');
+
+            // 3. Complete animation cleanly after 380ms
+            setTimeout(() => {
+                staticBottom.innerText = newValue;
+                card.classList.remove('flipping');
+                unit.current = newValue;
+            }, 380);
+        }
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = TARGET_TIME - now;
+
+            if (distance <= 0) {
+                flipCardUnit('days', '000');
+                flipCardUnit('hours', '00');
+                flipCardUnit('minutes', '00');
+                flipCardUnit('seconds', '00');
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            flipCardUnit('days', padZero(days, 3));
+            flipCardUnit('hours', padZero(hours, 2));
+            flipCardUnit('minutes', padZero(minutes, 2));
+            flipCardUnit('seconds', padZero(seconds, 2));
+        }
+
+        // --- Modals Toggle Logic ---
+        const infoModal = document.getElementById('infoModal');
+        const exploreModal = document.getElementById('exploreModal');
+
+        const openInfoBtn = document.getElementById('openInfoBtn');
+        const closeInfoBtn = document.getElementById('closeInfoBtn');
+
+        const openExploreBtn = document.getElementById('openExploreBtn');
+        const closeExploreBtn = document.getElementById('closeExploreBtn');
+
+        function toggleModal(modal, show) {
+            if (show) {
+                modal.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            } else {
+                modal.classList.remove('open');
+                document.body.style.overflow = '';
+            }
+        }
+
+        openInfoBtn.addEventListener('click', () => toggleModal(infoModal, true));
+        closeInfoBtn.addEventListener('click', () => toggleModal(infoModal, false));
+
+        openExploreBtn.addEventListener('click', () => {
+            toggleModal(exploreModal, true);
+            renderCalendar();
+        });
+        closeExploreBtn.addEventListener('click', () => toggleModal(exploreModal, false));
+
+        [infoModal, exploreModal].forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) toggleModal(modal, false);
+            });
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                toggleModal(infoModal, false);
+                toggleModal(exploreModal, false);
+            }
+        });
+
+        // --- Calendar Rendering Logic ---
+        let calDate = new Date(2028, 2, 1); // March 2028
+
+        const calMonthDisplay = document.getElementById('calMonthDisplay');
+        const calendarGrid = document.getElementById('calendarGrid');
+        const prevCalMonth = document.getElementById('prevCalMonth');
+        const nextCalMonth = document.getElementById('nextCalMonth');
+
+        const monthArray = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+                            "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+        function renderCalendar() {
+            const year = calDate.getFullYear();
+            const month = calDate.getMonth();
+
+            calMonthDisplay.innerText = `${monthArray[month]} ${year}`;
+            calendarGrid.innerHTML = '';
+
+            const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            for (let i = 0; i < firstDayIndex; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'text-neutral-700 py-1 font-light';
+                calendarGrid.appendChild(cell);
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const cell = document.createElement('div');
+                cell.className = 'py-1 flex items-center justify-center rounded-lg transition-colors';
+
+                const isTargetDay = (day === 18 && month === 2 && year === 2028);
+
+                if (isTargetDay) {
+                    cell.className += ' bg-amber-500 text-black font-bold shadow-md shadow-amber-500/20';
+                } else {
+                    cell.className += ' hover:bg-neutral-800 text-neutral-300';
+                }
+
+                cell.innerText = day;
+                calendarGrid.appendChild(cell);
+            }
+        }
+
+        prevCalMonth.addEventListener('click', () => {
+            calDate.setMonth(calDate.getMonth() - 1);
+            renderCalendar();
+        });
+
+        nextCalMonth.addEventListener('click', () => {
+            calDate.setMonth(calDate.getMonth() + 1);
+            renderCalendar();
+        });
+
+        window.onload = function() {
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+            renderCalendar();
+        };
+    </script>
+</body>
+</html>
